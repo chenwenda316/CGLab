@@ -1,367 +1,156 @@
-# CGLab: ¼ÆËã»úÍ¼ĞÎÑ§¾­µäËã·¨ÑİÊ¾³ÌĞò
+# CGLab è®¡ç®—æœºå›¾å½¢å­¦ç®—æ³•æ¼”ç¤ºç¨‹åº
 
-»ùÓÚMFCµÄ¼ÆËã»úÍ¼ĞÎÑ§»ù±¾Ëã·¨¿ÉÊÓ»¯ÊµÏÖ£¬°üº¬Ö±Ïß¡¢Ô²¡¢ÍÖÔ²Éú³ÉËã·¨£¬¶à±ßĞÎÌî³äËã·¨£¬¶şÎ¬/ÈıÎ¬¼¸ºÎ±ä»»µÈ¾­µäÍ¼ĞÎÑ§Ëã·¨µÄÑİÊ¾¡£
+åŸºäº **MFC + C++17** çš„è®¡ç®—æœºå›¾å½¢å­¦ç»å…¸ç®—æ³•å¯è§†åŒ–ç¨‹åºï¼ŒåŒ…å«ç›´çº¿ã€åœ†ã€æ¤­åœ†ç”Ÿæˆï¼Œå¤šè¾¹å½¢å¡«å……ï¼ŒäºŒç»´/ä¸‰ç»´å‡ ä½•å˜æ¢ï¼Œç›´çº¿ä¸å¤šè¾¹å½¢è£å‰ªï¼Œä»¥åŠä¸‰è§†å›¾ç­‰å†…å®¹ã€‚ç•Œé¢å·²ä¸­æ–‡åŒ–ï¼Œå¹¶ä¸ºå‚æ•°è¾“å…¥å’Œå‡ ä½•å˜æ¢æä¾›äº†ç°è‰²å®æ—¶é¢„è§ˆã€‚
 
-ÊÊÓÃÓÚÉ½¶«Å©Òµ´óÑ§¼ÆËã»úÍ¼ĞÎÑ§¿Î³ÌÑ§Ï°¡£
+- å½“å‰ä»“åº“ï¼š<https://github.com/chenwenda316/CGLab>
+- åŸé¡¹ç›®ï¼š<https://github.com/sophiel-meow/CGLab>
+- é€‚ç”¨è¯¾ç¨‹ï¼šå±±ä¸œå†œä¸šå¤§å­¦è®¡ç®—æœºå›¾å½¢å­¦
 
-## ½ØÍ¼
+## ç•Œé¢æˆªå›¾
+
 <table>
 <tr>
-<td><img src="screenshoots/1.png" width="1024" alt="1"/></td>
-<td><img src="screenshoots/2.png" width="1024" alt="2"/></td>
+<td><img src="screenshoots/1.png" alt="ç›´çº¿ã€åœ†ã€æ¤­åœ†"/></td>
+<td><img src="screenshoots/2.png" alt="ç§å­å¡«å……"/></td>
 </tr>
 <tr>
-<td><img src="screenshoots/3.png" width="1024" alt="3"/></td>
-<td><img src="screenshoots/4.png" width="1024" alt="4"/></td>
+<td><img src="screenshoots/3.png" alt="äºŒç»´å˜æ¢ä¸ç°è‰²é¢„è§ˆ"/></td>
+<td><img src="screenshoots/4.png" alt="ä¸‰è§†å›¾"/></td>
 </tr>
 </table>
 
-## ¹¦ÄÜÌØĞÔ
+## åŠŸèƒ½ç‰¹æ€§
 
-### 1. Ö±ÏßÉú³ÉËã·¨
-- DDAËã·¨ 
-- ÖĞµã»­Ïß·¨
-- BresenhamËã·¨
+### 1. ç›´çº¿ç”Ÿæˆ
+- DDA ç®—æ³•
+- ä¸­ç‚¹ç”»çº¿ç®—æ³•
+- Bresenham ç®—æ³•
 
-### 2. Ô²Éú³ÉËã·¨  
-- ÖĞµãËã·¨ 
-- BresenhamÔ²Éú³ÉËã·¨
+### 2. åœ†ä¸æ¤­åœ†ç”Ÿæˆ
+- åœ†ï¼šä¸­ç‚¹ç®—æ³•ã€Bresenham åœ†ç®—æ³•
+- æ¤­åœ†ï¼šBresenham æ¤­åœ†ç®—æ³•
 
-### 3. ÍÖÔ²Éú³ÉËã·¨
-- BresenhamÍÖÔ²Éú³ÉËã·¨
+### 3. å¤šè¾¹å½¢å¡«å……
+- X-æ‰«æçº¿å¡«å……
+- å››é‚»åŸŸç§å­å¡«å……
+- å…«é‚»åŸŸç§å­å¡«å……
 
-### 4. ¶à±ßĞÎÌî³äËã·¨
-- X-É¨ÃèÏßÌî³ä
-- ÖÖ×ÓÌî³äËã·¨(ËÄÁÚÓò)
-- ÖÖ×ÓÌî³äËã·¨(°ËÁÚÓò)
+### 4. äºŒç»´å‡ ä½•å˜æ¢
+- å¹³ç§»ã€æ—‹è½¬ã€é”™åˆ‡ã€ç¼©æ”¾ã€å¯¹ç§°
+- å˜æ¢å¯¹è±¡ä¸ºç”»å¸ƒä¸Šçš„**å…¨éƒ¨å›¾å½¢**ï¼ˆç›´çº¿ã€åœ†ã€æ¤­åœ†ã€å¤šè¾¹å½¢ï¼‰
+- ç§å­ç‚¹éšå›¾å½¢ä¸€èµ·å˜æ¢ï¼Œå¡«å……ç»“æœä¿æŒæ­£ç¡®
 
-### 5. ¶şÎ¬¼¸ºÎ±ä»»
-- Æ½ÒÆ±ä»»
-- Ğı×ª±ä»» 
-- ´íÇĞ±ä»»
-- Ëõ·Å±ä»»
-- ¶Ô³Æ±ä»»
+### 5. è£å‰ª
+- Cohen-Sutherland ç›´çº¿è£å‰ª
+- å¤šè¾¹å½¢è£å‰ªï¼ˆçŸ©å½¢çª—å£ï¼ŒSutherland-Hodgman å®ç°ï¼‰
 
-### 6. ²Ã¼ôËã·¨
-- Cohen-SutherlandÖ±Ïß²Ã¼ô
-- Sutherland-Hodgman¶à±ßĞÎ²Ã¼ô
+### 6. ä¸‰ç»´å›¾å½¢
+- æ–œäºŒä¾§æŠ•å½±æ˜¾ç¤ºå››æ£±å°
+- ä¸‰ç»´å¹³ç§»ã€æ—‹è½¬ã€ç¼©æ”¾ã€é”™åˆ‡ã€å¯¹ç§°
+- ä¸»è§†å›¾ã€ä¿¯è§†å›¾ã€å·¦è§†å›¾ä¸‰è§†å›¾æ˜¾ç¤ºï¼Œæ”¯æŒä¸æ–œäºŒä¾§æŠ•å½±æ¥å›åˆ‡æ¢
 
-### 7. ÈıÎ¬Í¼ĞÎ
-- Ğ±¶ş²àÍ¼ĞÎÔ¤ÀÀ
-- ÈıÎ¬¼¸ºÎ±ä»»(Æ½ÒÆ¡¢Ğı×ª¡¢Ëõ·ÅµÈÎåÖÖ)
-- ÈıÊÓÍ¼Éú³É
+### 7. ç°è‰²é¢„è§ˆ
+- **äºŒç»´/ä¸‰ç»´å˜æ¢**ï¼šç”¨ç°è‰²è™šçº¿ä¿ç•™å˜æ¢å‰çš„å›¾å½¢ï¼Œä¾¿äºå¯¹æ¯”
+- **ç›´çº¿/åœ†/æ¤­åœ†**ï¼šåœ¨å‚æ•°å¯¹è¯æ¡†ä¸­è¾“å…¥æ—¶ï¼Œç”»å¸ƒå®æ—¶æ˜¾ç¤ºç°è‰²é¢„è§ˆï¼Œç¡®å®šåå˜é»‘è‰²æ­£å¼å›¾å½¢
+- **ç§å­å¡«å……**ï¼šå¤šè¾¹å½¢é—­åˆåï¼Œé¼ æ ‡åœ¨å¤šè¾¹å½¢å†…éƒ¨ç§»åŠ¨æ—¶æ˜¾ç¤ºç°è‰²å¡«å……åŒºåŸŸï¼Œç‚¹å‡»åæ‰æ­£å¼å¡«å……
+- é¢„è§ˆåªåœ¨éœ€è¦çš„åœ°æ–¹å‡ºç°ï¼Œå–æ¶ˆæˆ–ç¡®å®šåè‡ªåŠ¨æ¸…é™¤
 
-## ¼¼ÊõÊµÏÖ
+## ä½¿ç”¨æ–¹æ³•
 
-### ºËĞÄÉè¼Æ
-- ÃæÏò¶ÔÏó
-- Ê¹ÓÃStrategyÉè¼ÆÄ£Ê½ÊµÏÖËã·¨ÇĞ»»
-- Ê¹ÓÃÏÖ´úC++ÖĞÖÇÄÜÖ¸ÕëµÈ¹¦ÄÜ
-- »ùÓÚMFCÊµÏÖÓÃ»§½çÃæºÍÍ¼ĞÎ»æÖÆ
+1. é€šè¿‡èœå•é€‰æ‹©ç®—æ³•ï¼š`ç›´çº¿`ã€`åœ†`ã€`æ¤­åœ†`ã€`å¤šè¾¹å½¢`ã€`äºŒç»´å˜æ¢`ã€`è£å‰ª`ã€`ä¸‰ç»´å˜æ¢`ã€‚
+2. ç›´çº¿/åœ†/æ¤­åœ†ï¼šåœ¨å¯¹è¯æ¡†ä¸­è¾“å…¥å‚æ•°ï¼Œç”»å¸ƒä¸Šä¼šå®æ—¶æ˜¾ç¤ºç°è‰²é¢„è§ˆï¼Œç‚¹å‡»â€œç¡®å®šâ€ç”Ÿæˆé»‘è‰²å›¾å½¢ã€‚
+3. å¤šè¾¹å½¢ï¼š
+   - å·¦é”®ä¾æ¬¡æ·»åŠ é¡¶ç‚¹ï¼Œå³é”®é—­åˆå¹¶ç»“æŸç»˜åˆ¶ï¼›
+   - ç§å­å¡«å……æ¨¡å¼ä¸‹ï¼Œé—­åˆåç§»åŠ¨é¼ æ ‡å¯çœ‹åˆ°ç°è‰²å¡«å……é¢„è§ˆï¼Œå·¦é”®é€‰æ‹©ç§å­ç‚¹å®Œæˆå¡«å……ã€‚
+4. äºŒç»´å˜æ¢ï¼šå…ˆç»˜åˆ¶å›¾å½¢ï¼Œå†é€‰æ‹©å¹³ç§»/æ—‹è½¬/é”™åˆ‡/ç¼©æ”¾/å¯¹ç§°ï¼›ç°è‰²è™šçº¿ä¸ºå˜æ¢å‰è½®å»“ã€‚
+5. è£å‰ªï¼šè®¾ç½®è£å‰ªçª—å£åè¾“å…¥ç›´çº¿ï¼Œæˆ–ä½¿ç”¨å¤šè¾¹å½¢è£å‰ªï¼›è£å‰ªçª—å£å’Œå¤šè¾¹å½¢ç»“æœä¼šåŒæ—¶æ˜¾ç¤ºã€‚
+6. ä¸‰ç»´ï¼šå…ˆé€‰æ‹© `ä¸‰ç»´å˜æ¢ -> åŸå§‹å›¾å½¢ï¼ˆæ–œäºŒä¾§ï¼‰`ï¼Œå†è¿›è¡Œå„ç±»å˜æ¢ï¼›`ä¸‰è§†å›¾/æ–œäºŒä¾§ï¼ˆåˆ‡æ¢ï¼‰` å¯åœ¨ä¸¤ç§æ˜¾ç¤ºæ–¹å¼é—´åˆ‡æ¢ã€‚
+7. `æ–‡ä»¶ -> æ¸…é™¤` æ¸…ç©ºç”»å¸ƒã€‚
 
-### ¹Ø¼üÀà
-- `GraphicsObject`: Í¼ĞÎ¶ÔÏó»ùÀà
-- `Line/Circle/Ellipse/...`: ¾ßÌåÍ¼ĞÎÀà
-- `Matrix3x3/Matrix4x4`: ¾ØÕóÀà
-- `Point2D/Point3D`: 2D¡¢3Dµã×ø±êÀà
-- `Transform2D/Transform3D`: ¼¸ºÎ±ä»»ÊµÏÖ
-- `ILineAlgorithm/ICircleAlgorithm/...`: Ëã·¨½Ó¿ÚÀà
-- `*Algorithms`: ¾ßÌåËã·¨Àà
+## æŠ€æœ¯å®ç°
 
-### ViewÀà¹¦ÄÜËµÃ÷
+- é¢å‘å¯¹è±¡è®¾è®¡ï¼Œå›¾å½¢ç»Ÿä¸€ç»§æ‰¿ `GraphicsObject`
+- Strategy æ¨¡å¼åˆ‡æ¢ç®—æ³•ï¼ˆ`ILineAlgorithm`ã€`ICircleAlgorithm`ã€`IEllipseAlgorithm`ã€`IPolygonAlgorithm` ç­‰ï¼‰
+- ä½¿ç”¨ç°ä»£ C++ï¼š`std::shared_ptr`ã€`std::unique_ptr`ã€`std::vector`ã€lambda ç­‰
+- åŒç¼“å†²ç»˜åˆ¶ï¼Œå‡å°‘é—ªçƒ
+- MFC å•æ–‡æ¡£ç•Œé¢ï¼ˆSDIï¼‰ï¼Œèœå•å’Œå¯¹è¯æ¡†æ“ä½œ
 
-#### ºËĞÄ³ÉÔ±±äÁ¿
-1. Ä£Ê½ÇĞ»»
-```cpp
-bool m_is3DMode;       // 2D/3DÄ£Ê½±êÖ¾
-bool m_isOrthographic; // ÕıÍ¶Ó°/Ğ±¶ş²âÍ¶Ó°ÇĞ»»
+### å…³é”®ç±»
+
+| ç±» | è¯´æ˜ |
+| --- | --- |
+| `GraphicsObject` | æ‰€æœ‰äºŒç»´å›¾å½¢çš„åŸºç±»ï¼Œå®šä¹‰ç»˜åˆ¶ã€ç”Ÿæˆç‚¹å’Œè½®å»“æ¥å£ |
+| `Line` / `Circle` / `Ellipse` / `Polygon` | å…·ä½“å›¾å½¢å¯¹è±¡ |
+| `Point2D` / `Point3D` | äºŒç»´/ä¸‰ç»´ç‚¹ |
+| `Matrix3x3` / `Matrix4x4` | é½æ¬¡åæ ‡å˜æ¢çŸ©é˜µ |
+| `Transform2D` / `Transform3D` | å¹³ç§»ã€æ—‹è½¬ã€é”™åˆ‡ã€ç¼©æ”¾ã€å¯¹ç§°çŸ©é˜µ |
+| `*Algorithms` | å…·ä½“ç®—æ³•å®ç° |
+| `CCGLabView` | è§†å›¾ã€äº¤äº’ã€é¢„è§ˆå’Œç»˜åˆ¶è°ƒåº¦ |
+| `Frustum` / `Object3D` | ä¸‰ç»´å››æ£±å°å’Œä¸‰è§†å›¾æŠ•å½± |
+
+## ç›®å½•ç»“æ„
+
+```
+CGLab/
+â”œâ”€â”€ CGLab.sln
+â”œâ”€â”€ CGLab/
+â”‚   â”œâ”€â”€ CGLab.cpp / CGLab.h          # åº”ç”¨ç¨‹åº
+â”‚   â”œâ”€â”€ MainFrm.cpp / MainFrm.h      # ä¸»æ¡†æ¶çª—å£
+â”‚   â”œâ”€â”€ CGLabDoc.cpp / CGLabDoc.h    # æ–‡æ¡£
+â”‚   â”œâ”€â”€ CGLabView.cpp / CGLabView.h  # è§†å›¾ä¸äº¤äº’
+â”‚   â”œâ”€â”€ Line / Circle / Ellipse / Polygon ...     # å›¾å½¢å¯¹è±¡
+â”‚   â”œâ”€â”€ *Algorithms.cpp / .hpp                    # å„ç±»ç®—æ³•
+â”‚   â”œâ”€â”€ Transform2D / Transform3D                 # äºŒç»´/ä¸‰ç»´å˜æ¢
+â”‚   â”œâ”€â”€ Matrix3x3 / Matrix4x4 / Point2D / Point3D # æ•°å­¦åŸºç¡€
+â”‚   â”œâ”€â”€ Frustum / Object3D                        # ä¸‰ç»´æ¨¡å‹ä¸æŠ•å½±
+â”‚   â”œâ”€â”€ *InputDlg / TransformDlg / ClipWindowDlg  # å‚æ•°å¯¹è¯æ¡†
+â”‚   â””â”€â”€ CGLab.rc / resource.h                     # èœå•ã€å¯¹è¯æ¡†ã€å­—ç¬¦ä¸²èµ„æº
+â””â”€â”€ screenshoots/                                 # README æˆªå›¾
 ```
 
-2. ½»»¥×´Ì¬¿ØÖÆ
-```cpp
-bool m_isDrawingPolygon;   // ÊÇ·ñÕıÔÚ»æÖÆ¶à±ßĞÎ
-bool m_isClipWindowSet;    // ÊÇ·ñÉèÖÃÁË²Ã¼ô´°¿Ú
-CPoint m_lastMousePos;     // ¼ÇÂ¼Êó±êÎ»ÖÃÓÃÓÚÊµÊ±Ô¤ÀÀ
-```
+## å¼€å‘ç¯å¢ƒ
 
-3. ¶ÔÏó¹ÜÀí
-```cpp
-// ´æ´¢ËùÓĞÍ¼ĞÎ¶ÔÏó
-std::vector<std::shared_ptr<MyGraphics::GraphicsObject>> m_objects;
-// µ±Ç°ÕıÔÚ»æÖÆµÄ¶à±ßĞÎ
-std::shared_ptr<MyGraphics::Polygon> m_currentPolygon;
-// µ±Ç°Ê¹ÓÃµÄ¶à±ßĞÎËã·¨
-MyGraphics::Polygon::Algorithm m_currentPolygonAlgorithm;
-```
-
-#### ÔËĞĞÁ÷³Ì
-
-1. OnDraw»æÖÆÁ÷³Ì
-```cpp
-void CCGLabView::OnDraw(CDC* pDC) {
-    // 1. ´´½¨ÄÚ´æDCÒÔÊµÏÖË«»º³å
-    CDC memDC;
-    CBitmap memBitmap;
-    memDC.CreateCompatibleDC(pDC);
-    
-    // 2. ¸ù¾İÄ£Ê½Ñ¡Ôñ»æÖÆ·½Ê½
-    if (m_is3DMode) {
-        if (m_isOrthographic) {
-            Draw3ViewsObject(&memDC);     // »æÖÆÈıÊÓÍ¼
-        } else {
-            Draw3DObject(&memDC);         // »æÖÆĞ±¶ş²âÍ¶Ó°
-        }
-    } else {
-        // 3. 2DÄ£Ê½ÏÂµÄ»æÖÆÁ÷³Ì
-        // 3.1 Èç¹ûÉèÖÃÁË²Ã¼ô´°¿ÚÇÒÃ»ÓĞÆäËû¶ÔÏó£¬ÏÔÊ¾²Ã¼ô´°¿Ú
-        if (m_isClipWindowSet && m_objects.empty()) {
-            m_clipWindow.Draw(&memDC);
-        }
-        
-        // 3.2 »æÖÆËùÓĞÒÑÍê³ÉµÄÍ¼ĞÎ¶ÔÏó
-        for (const auto& obj : m_objects) {
-            obj->Draw(&memDC);
-        }
-        
-        // 3.3 ´¦Àí¶à±ßĞÎ»æÖÆµÄÊµÊ±Ô¤ÀÀ
-        if (m_isDrawingPolygon && m_currentPolygon) {
-            // »æÖÆµ±Ç°¶à±ßĞÎ
-            m_currentPolygon->Draw(&memDC);
-            
-            // Èç¹û¶à±ßĞÎÎ´·â±Õ£¬ÏÔÊ¾Ô¤ÀÀÏß
-            if (!m_currentPolygon->IsClosed()) {
-                DrawPreviewLine(&memDC);
-            }
-        }
-        
-        // 3.4 ÏÔÊ¾²Ù×÷ÌáÊ¾
-        DrawPrompt(&memDC);
-    }
-    
-    // 4. ½«ÄÚ´æDCÄÚÈİ¸´ÖÆµ½ÆÁÄ»
-    pDC->BitBlt(0, 0, rect.Width(), rect.Height(), 
-                &memDC, 0, 0, SRCCOPY);
-}
-```
-
-2. Êó±êÊÂ¼ş´¦ÀíÁ÷³Ì
-```cpp
-void CCGLabView::OnLButtonDown(UINT nFlags, CPoint point) {
-    if (m_isDrawingPolygon && m_currentPolygon) {
-        if (!m_currentPolygon->IsClosed()) {
-            // Ìí¼Ó¶à±ßĞÎ¶¥µã
-            m_currentPolygon->AddVertex(Point2D(point.x, point.y));
-            m_lastMousePos = point;
-            Invalidate();  // ´¥·¢ÖØ»æ
-        }
-        else if (m_currentPolygonAlgorithm != Polygon::ALGO_SCANLINE) {
-            // ¶à±ßĞÎÒÑ·â±Õ£¬ÉèÖÃÖÖ×Óµã
-            m_currentPolygon->SetSeed(Point2D(point.x, point.y));
-            m_currentPolygon->GeneratePoints();
-            Invalidate();
-        }
-    }
-}
-
-void CCGLabView::OnRButtonDown(UINT nFlags, CPoint point) {
-    if (m_isDrawingPolygon && m_currentPolygon) {
-        if (!m_currentPolygon->IsClosed()) {
-            // ·â±Õ¶à±ßĞÎ
-            m_currentPolygon->Close();
-            
-            // ¸ù¾İËã·¨ÀàĞÍ¾ö¶¨ºóĞø²Ù×÷
-            if (m_currentPolygonAlgorithm == Polygon::ALGO_SCANLINE) {
-                // É¨ÃèÏßËã·¨Ö±½ÓÉú³ÉÌî³äµã
-                m_currentPolygon->GeneratePoints();
-                m_objects.push_back(m_currentPolygon);
-                m_isDrawingPolygon = false;
-            }
-            Invalidate();
-        }
-    }
-}
-
-void CCGLabView::OnMouseMove(UINT nFlags, CPoint point) {
-    if (m_isDrawingPolygon && m_currentPolygon 
-        && !m_currentPolygon->IsClosed()) {
-        // ¸üĞÂÔ¤ÀÀÏßµÄÖÕµã
-        m_lastMousePos = point;
-        Invalidate();
-    }
-}
-```
-
-3. ×´Ì¬×ª»»Á÷³Ì
-```cpp
-// ½øÈë¶à±ßĞÎ»æÖÆÄ£Ê½
-void CCGLabView::OnPolygonX() {
-    ClearScreen();  // Çå³ıÏÖÓĞÄÚÈİ
-    m_isDrawingPolygon = true;
-    m_currentPolygon = std::make_shared<Polygon>();
-    m_currentPolygon->SetAlgorithm(Polygon::ALGO_SCANLINE);
-    m_currentPolygonAlgorithm = Polygon::ALGO_SCANLINE;
-}
-
-// ÇĞ»»µ½3DÄ£Ê½
-void CCGLabView::On3dtransformOriginal() {
-    ClearAll();
-    m_is3DMode = true;
-    m_isOrthographic = false;
-    m_frustum = std::make_shared<Frustum>();
-    UpdateProjection();
-    Invalidate();
-}
-```
-
-×¢Òâ£ºÒÔÉÏ´úÂëÕ¹Ê¾ÁËÖ÷ÒªµÄ¿ØÖÆÁ÷³Ì£¬µ«ÎªÁËÑİÊ¾Ä¿µÄ£¬ÕâÖÖÉè¼Æ½«¶à¸öÖ°Ôğ¼¯ÖĞÔÚViewÀàÖĞ¡£
-
-## ¿ª·¢»·¾³
-
-- Visual Studio 2022
-- MFC
-- C++17
+- Visual Studio 2022ï¼ˆv143 å·¥å…·é›†ï¼‰
 - Windows SDK 10.0
+- C++17
+- MFCï¼šåœ¨é™æ€åº“ä¸­ä½¿ç”¨ MFCï¼ˆåŒæ—¶ä½¿ç”¨é™æ€ CRTï¼‰
+- å­—ç¬¦é›†ï¼šUnicode
 
-## ¹¹½¨ÓëÔËĞĞ
+## æ„å»ºä¸è¿è¡Œ
 
-### ±àÒë»·¾³ÅäÖÃ
-- Æ½Ì¨¹¤¾ß¼¯: Ñ¡Ôñv143(VS2022)
-- Windows SDK°æ±¾: 10.0
-- MFCµÄÊ¹ÓÃ: ÔÚ¾²Ì¬¿âÖĞÊ¹ÓÃMFC
-- ×Ö·û¼¯: Ê¹ÓÃUnicode×Ö·û¼¯
-- C\++ÓïÑÔ±ê×¼: C\++17
+1. ä½¿ç”¨ Visual Studio 2022 æ‰“å¼€ `CGLab.sln`ã€‚
+2. é…ç½®é€‰æ‹© **Release | x64**ï¼ˆæˆ– Debug | x64ï¼‰ã€‚
+3. ç”Ÿæˆè§£å†³æ–¹æ¡ˆã€‚
+4. å¯æ‰§è¡Œæ–‡ä»¶ä½äºï¼š
 
-### ±àÒë²½Öè
-1. Ê¹ÓÃVisual Studio´ò¿ª½â¾ö·½°¸ÎÄ¼ş(.sln)
-2. ÅäÖÃ½â¾ö·½°¸Æ½Ì¨Îªx64
-3. Ñ¡ÔñDebug£¨»òRelease£©ÅäÖÃ
-4. µã»÷Build -> Build Solution½øĞĞ¹¹½¨
-5. µÈ´ı±àÒëÍê³É
-6. ÔÚx64/ReleaseÄ¿Â¼ÏÂÕÒµ½¿ÉÖ´ĞĞÎÄ¼ş
+   ```
+   x64\Release\CGLab.exe
+   ```
 
-## Ê¹ÓÃËµÃ÷
+   ç”±äºä½¿ç”¨é™æ€ MFC å’Œé™æ€ CRTï¼Œè¯¥ exe åªä¾èµ– Windows ç³»ç»Ÿ DLLï¼Œå¯ç›´æ¥å¤åˆ¶åˆ°å…¶ä»– 64 ä½ Windows ä¸Šè¿è¡Œï¼Œæ— éœ€å®‰è£… VC++ è¿è¡Œåº“ã€‚
 
-1. Ñ¡Ôñ²Ëµ¥ÖĞµÄËã·¨ÀàĞÍ
-2. ¸ù¾İÌáÊ¾ÊäÈë±ØÒª²ÎÊı
-3. ¹Û²ìËã·¨Ö´ĞĞ½á¹ûµÄ¿ÉÊÓ»¯Õ¹Ê¾
-4. ¿ÉÒÔÊ¹ÓÃClearÇå³ı»­²¼
+## ä¸»è¦ä¿®å¤è®°å½•
 
-## ¼Ü¹¹Éè¼Æ
+- ä¿®å¤æ¤­åœ† Bresenham åˆ¤åˆ«å¼ä¸­ `int` ä¸­é—´ç»“æœæº¢å‡ºå¯¼è‡´æ¤­åœ†è¢«æˆªæ–­çš„é—®é¢˜ï¼ˆæ”¹ä¸º `double` è¿ç®—ï¼‰
+- ä¿®å¤ Bresenham ç”»çº¿åœ¨åå‘ï¼ˆdx/dy ä¸ºè´Ÿï¼‰æ—¶æ–œç‡é”™è¯¯çš„é—®é¢˜
+- ä¿®å¤ä¸­ç‚¹ç”»çº¿åœ¨é™¡å³­ä¸”æ–œç‡ä¸ºè´Ÿæ—¶æ— æ³•ç”Ÿæˆç‚¹çš„é—®é¢˜
+- ä¿®å¤ DDA èµ·ç»ˆç‚¹é‡åˆæ—¶é™¤é›¶çš„é—®é¢˜
+- ä¿®å¤ `Line::SetAlgorithm` ç¼ºå°‘ `break` å¯¼è‡´ Bresenham å®é™…ä½¿ç”¨ DDA çš„é—®é¢˜
+- äºŒç»´å˜æ¢æ”¹ä¸ºä½œç”¨äºæ‰€æœ‰å›¾å½¢ï¼Œå¹¶åŒæ­¥å˜æ¢ç§å­ç‚¹
+- å¤šè¾¹å½¢è£å‰ªç”±ä¸å¯ç”¨çš„é€’å½’äºŒåˆ†å®ç°æ”¹ä¸ºæ­£ç¡®çš„ Sutherland-Hodgman
+- å¢åŠ ç›´çº¿/åœ†/æ¤­åœ†/ç§å­å¡«å……çš„ç°è‰²é¢„è§ˆ
+- èœå•ã€å¯¹è¯æ¡†ã€å…³äºæ¡†ä¸­æ–‡åŒ–
 
-ÏîÄ¿²ÉÓÃ·Ö²ã¼Ü¹¹:
-- Ëã·¨²ã: ÊµÏÖ¸÷ÀàÍ¼ĞÎÑ§Ëã·¨
-- Ä£ĞÍ²ã: ¶¨ÒåÍ¼ĞÎ¶ÔÏóºÍÊı¾İ½á¹¹
-- ÊÓÍ¼²ã: ´¦ÀíÓÃ»§½»»¥ºÍÍ¼ĞÎÏÔÊ¾
+## è®¸å¯ä¸è‡´è°¢
 
-## ´úÂëÊ¾Àı
+æœ¬é¡¹ç›®éµå¾ª **MIT License**ï¼ŒåŸå§‹ç‰ˆæƒå£°æ˜ä¿ç•™åœ¨ [LICENSE.txt](LICENSE.txt) ä¸­ï¼š
 
-```cpp
-// Ê¹ÓÃBresenhamËã·¨»æÖÆÖ±Ïß
-auto line = std::make_shared<MyGraphics::Line>();
-line->SetAlgorithm(MyGraphics::Line::ALGO_BRESENHAM);
-line->SetPoints(start, end);
-line->GeneratePoints();
-```
+- åŸå§‹è®¾è®¡/å®ç°ï¼š**Ziyu ZHOU @ SDAU**ï¼ˆ2024ï¼‰
+- è®¸å¯è¯ç‰ˆæƒï¼š**Copyright (c) 2024 Jun Amane**
+- ç•Œé¢ä¸­æ–‡åŒ–ã€ç®—æ³•ä¿®å¤ä¸åŠŸèƒ½å¢å¼ºï¼š**é™ˆæ–‡è¾¾**ï¼ˆ2026ï¼‰
 
-## ²ã´Î½á¹¹
+ä¿®æ”¹ç‰ˆæœ¬ä»“åº“ï¼š<https://github.com/chenwenda316/CGLab>
 
-```
-©À©¤©¤ Algorithms/       # Ëã·¨ÊµÏÖ
-©À©¤©¤ Math/            # ÊıÑ§¹¤¾ßÀà
-©À©¤©¤ Models/          # Í¼ĞÎÄ£ĞÍÀà
-©¸©¤©¤ Dialogs/         # ¶Ô»°¿òUI
-```
+---
 
-## À©Õ¹Óë×Ô¶¨Òå
-
-### Ìí¼ÓĞÂµÄÍ¼ĞÎËã·¨
-1. ¶¨ÒåËã·¨½Ó¿Ú
-```cpp
-// ÔÚ¶ÔÓ¦µÄIxxxAlgorithm.hppÖĞÌí¼ÓĞÂ½Ó¿Ú
-namespace MyGraphics {
-    namespace Algorithms {
-        class INewAlgorithm {
-        public:
-            virtual ~INewAlgorithm() = default;
-            virtual std::vector<Point2D> GeneratePoints(...) = 0;
-        };
-    }
-}
-```
-
-2. ÊµÏÖËã·¨Àà
-```cpp
-// ÔÚĞÂµÄËã·¨ÊµÏÖÎÄ¼şÖĞ
-class NewAlgorithm : public INewAlgorithm {
-public:
-    std::vector<Point2D> GeneratePoints(...) override {
-        // ÊµÏÖËã·¨Âß¼­
-    }
-};
-```
-
-3. ÔÚÍ¼ĞÎ¶ÔÏóÀàÖĞÌí¼ÓÖ§³Ö
-```cpp
-// ÔÚ¶ÔÓ¦µÄÍ¼ĞÎÀàÖĞ
-class Shape : public GraphicsObject {
-public:
-    enum Algorithm {
-        // Ìí¼ÓĞÂËã·¨ÀàĞÍ
-        ALGO_NEW = xxx
-    };
-    
-    void SetAlgorithm(Algorithm algo) {
-        switch(algo) {
-            case ALGO_NEW:
-                m_algorithm = std::make_unique<NewAlgorithm>();
-                break;
-        }
-    }
-};
-```
-
-4. ¸üĞÂÓÃ»§½çÃæ
-   - ÔÚ×ÊÔ´ÎÄ¼şÖĞÌí¼Ó²Ëµ¥Ïî
-   - Ìí¼ÓÃüÁî´¦Àíº¯Êı
-   - ÊµÏÖ½»»¥Âß¼­
-
-### Ìí¼ÓĞÂµÄÍ¼ĞÎ¶ÔÏó
-1. ´´½¨ĞÂµÄÍ¼ĞÎÀà
-```cpp
-class NewShape : public GraphicsObject {
-public:
-    NewShape() : GraphicsObject(OT_NEWSHAPE) {}
-    
-    void GeneratePoints() override {
-        // ÊµÏÖµãÉú³ÉÂß¼­
-    }
-    
-    void Draw(CDC* pDC) override {
-        // ÊµÏÖ»æÖÆÂß¼­
-    }
-};
-```
-
-2. Ìí¼ÓÏà¹ØËã·¨Ö§³Ö
-   - ´´½¨Ëã·¨½Ó¿ÚÀà
-   - ÊµÏÖ¾ßÌåËã·¨Àà
-   - ÔÚÍ¼ĞÎÀàÖĞ¼¯³ÉËã·¨
-
-3. ´´½¨½»»¥½çÃæ
-   - Ìí¼Ó²ÎÊıÊäÈë¶Ô»°¿ò
-   - ÊµÏÖÃüÁî´¦Àíº¯Êı
-   - ¸üĞÂ²Ëµ¥ºÍ¹¤¾ßÀ¸
-
-### ĞŞ¸ÄÏÖÓĞËã·¨
-1. ÕÒµ½¶ÔÓ¦µÄËã·¨ÊµÏÖÀà
-2. ĞŞ¸ÄGeneratePoints()·½·¨ÖĞµÄÂß¼­
-3. ±£³Ö½Ó¿Ú²»±ä£¬È·±£¼æÈİĞÔ
-
-## Ğí¿É
-
-±¾ÏîÄ¿×ñÑ­ MIT Ğí¿ÉÖ¤¡£
-
-
-***Designed by Ziyu ZHOU at SDAU***
-
-*30th. Nov. 2024*
+*Designed by Ziyu ZHOU at SDAU, 30th Nov. 2024. Maintained and extended by Chen Wenda, 2026.*
