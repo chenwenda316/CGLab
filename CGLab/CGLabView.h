@@ -14,6 +14,8 @@
 #include "Frustum.hpp"
 #include "ClipWindow.hpp"
 
+class CCGLabDoc;
+
 class CCGLabView : public CView
 {
 protected: // create from serialization only
@@ -23,6 +25,11 @@ protected: // create from serialization only
 // Attributes
 public:
 	CCGLabDoc* GetDocument() const;
+
+	// 输入参数的灰色预览
+	void PreviewLine(const MyGraphics::Point2D& start, const MyGraphics::Point2D& end);
+	void PreviewCircle(const MyGraphics::Point2D& centre, int radius);
+	void PreviewEllipse(const MyGraphics::Point2D& centre, int a, int b);
 
 // Operations
 public:
@@ -78,6 +85,18 @@ protected:
 	void Capture2DGhost();
 	void Draw2DGhost(CDC* pDC);
 	void Capture3DGhost();
+
+	// 输入/填充的灰色预览
+	std::vector<MyGraphics::Point2D> m_shapePreview;
+	bool m_hasShapePreview = false;
+	MyGraphics::Line::Algorithm m_previewLineAlgo = MyGraphics::Line::ALGO_DDA;
+	MyGraphics::Circle::Algorithm m_previewCircleAlgo = MyGraphics::Circle::ALGO_MIDPOINT;
+	std::vector<MyGraphics::Point2D> m_fillPreview;
+	bool m_hasFillPreview = false;
+	CPoint m_lastFillPreviewPos;
+	ULONGLONG m_lastFillPreviewTick = 0;
+	void ClearShapePreview();
+	void DrawShapePreview(CDC* pDC);
     
     // 3D辅助函数
     MyGraphics::Matrix4x4 GetObliqueProjMatrix(double alpha = 45.0, double beta = 45.0);

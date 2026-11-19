@@ -68,7 +68,10 @@ namespace MyGraphics {
          */
         void Transform(const Matrix3x3& matrix) override;
 
-        void GetOutline(std::vector<Point2D>& points, bool& closed) const override;              // 对多边形进行变换
+        void GetOutline(std::vector<Point2D>& points, bool& closed) const override;
+
+        // 计算种子填充的预览点（不改变图形本身）
+        std::vector<Point2D> PreviewFill(const Point2D& seed);              // 对多边形进行变换
         void SetClipWindow(const ClipWindow& window) { m_clipWindow = window; }  // 设置裁剪窗口
         ClipWindow& GetClipWindow() { return m_clipWindow; }  // 获取裁剪窗口
 

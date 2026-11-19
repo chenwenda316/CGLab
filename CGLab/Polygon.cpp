@@ -160,6 +160,14 @@ void Polygon::GetOutline(std::vector<Point2D>& points, bool& closed) const {
     closed = m_closed;
 }
 
+std::vector<Point2D> Polygon::PreviewFill(const Point2D& seed) {
+    if (!m_closed || !m_polygonAlgorithm) return std::vector<Point2D>();
+    if (m_algorithm != ALGO_SEEDFILL_4 && m_algorithm != ALGO_SEEDFILL_8) {
+        return std::vector<Point2D>();
+    }
+    return m_polygonAlgorithm->GeneratePoints(m_vertices, seed);
+}
+
 void Polygon::Draw(CDC* pDC) {
     // 1. 绘制裁剪窗口和原始多边形(如果使用裁剪算法)
     if (m_algorithm == ALGO_WEILER_ATHERTON) {

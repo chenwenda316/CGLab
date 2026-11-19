@@ -68,6 +68,8 @@ namespace MyGraphics {
 
         void GetOutline(std::vector<Point2D>& points, bool& closed) const override;
 
+        const std::vector<Point2D>& GetPoints() const { return m_points; }
+
     private:
         Algorithm m_algorithm;      // 当前使用的算法类型
         Point2D m_centre;          // 圆心坐标

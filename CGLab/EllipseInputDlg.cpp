@@ -8,6 +8,7 @@
 
 #include "pch.h"
 #include "EllipseInputDlg.hpp"
+#include "CGLabView.h"
 
 IMPLEMENT_DYNAMIC(EllipseInputDlg, CDialog)
 
@@ -34,4 +35,31 @@ void EllipseInputDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(EllipseInputDlg, CDialog)
+    ON_EN_CHANGE(IDC_ELLIPSE_CENTRE_X, &EllipseInputDlg::OnPreviewChanged)
+    ON_EN_CHANGE(IDC_ELLIPSE_CENTRE_Y, &EllipseInputDlg::OnPreviewChanged)
+    ON_EN_CHANGE(IDC_ELLIPSE_A, &EllipseInputDlg::OnPreviewChanged)
+    ON_EN_CHANGE(IDC_ELLIPSE_B, &EllipseInputDlg::OnPreviewChanged)
 END_MESSAGE_MAP()
+
+BOOL EllipseInputDlg::OnInitDialog()
+{
+    CDialog::OnInitDialog();
+    UpdateData(FALSE);
+    // 确保默认值真正写入控件
+    SetDlgItemInt(IDC_ELLIPSE_CENTRE_X, m_centreX, TRUE);
+    SetDlgItemInt(IDC_ELLIPSE_CENTRE_Y, m_centreY, TRUE);
+    SetDlgItemInt(IDC_ELLIPSE_A, m_a, TRUE);
+    SetDlgItemInt(IDC_ELLIPSE_B, m_b, TRUE);
+    OnPreviewChanged();
+    return TRUE;
+}
+
+void EllipseInputDlg::OnPreviewChanged()
+{
+    if (!m_pPreviewView) return;
+    int cx = static_cast<int>(GetDlgItemInt(IDC_ELLIPSE_CENTRE_X, nullptr, TRUE));
+    int cy = static_cast<int>(GetDlgItemInt(IDC_ELLIPSE_CENTRE_Y, nullptr, TRUE));
+    int a = static_cast<int>(GetDlgItemInt(IDC_ELLIPSE_A, nullptr, TRUE));
+    int b = static_cast<int>(GetDlgItemInt(IDC_ELLIPSE_B, nullptr, TRUE));
+    m_pPreviewView->PreviewEllipse(MyGraphics::Point2D(cx, cy), a, b);
+}

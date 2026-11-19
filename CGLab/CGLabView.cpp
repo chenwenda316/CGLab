@@ -137,6 +137,12 @@ void CCGLabView::OnDraw(CDC* pDC)
 
 		// 绘制正在构建的多边形
 		if (m_isDrawingPolygon && m_currentPolygon) {
+			// 种子填充的灰色预览
+			if (m_hasFillPreview) {
+				for (const auto& pt : m_fillPreview) {
+					memDC.SetPixel(pt.x, pt.y, RGB(160, 160, 160));
+				}
+			}
 			m_currentPolygon->Draw(&memDC);
 
 			// 绘制预览线（虚线效果）
@@ -153,6 +159,8 @@ void CCGLabView::OnDraw(CDC* pDC)
 		}
 
 		// 绘制提示信息
+		DrawShapePreview(&memDC);
+
 		DrawPrompt(&memDC);
 	}
 
@@ -175,6 +183,10 @@ void CCGLabView::ClearAll()
 	m_ghost2D.clear();
 	m_ghost3D.clear();
 	m_hasGhost3D = false;
+	m_shapePreview.clear();
+	m_hasShapePreview = false;
+	m_fillPreview.clear();
+	m_hasFillPreview = false;
 }
 
 Matrix4x4 CCGLabView::GetObliqueProjMatrix(double alpha, double beta)
@@ -405,14 +417,18 @@ CCGLabDoc* CCGLabView::GetDocument() const // non-debug version is inline
 
 void CCGLabView::HandleLineAlgorithm(MyGraphics::Line::Algorithm algo)
 {
-	LineInputDlg dlg;
+	m_previewLineAlgo = algo;
+	LineInputDlg dlg(this);
+	dlg.SetPreviewView(this);
 	CRect clientRect;
 	GetClientRect(&clientRect);
 	dlg.m_x0 = clientRect.Width() / 4;
 	dlg.m_y0 = clientRect.Height() / 2;
 	dlg.m_x1 = clientRect.Width() * 3 / 4;
 	dlg.m_y1 = clientRect.Height() / 2;
-	if (dlg.DoModal() == IDOK) {
+	INT_PTR result = dlg.DoModal();
+	ClearShapePreview();
+	if (result == IDOK) {
 		if (m_is3DMode) {
 			ClearAll();  // 退出三维模式，回到二维绘制
 		}
@@ -431,13 +447,17 @@ void CCGLabView::HandleLineAlgorithm(MyGraphics::Line::Algorithm algo)
 
 void CCGLabView::HandleCircleAlgorithm(MyGraphics::Circle::Algorithm algo)
 {
-	CircleInputDlg dlg;
+	m_previewCircleAlgo = algo;
+	CircleInputDlg dlg(this);
+	dlg.SetPreviewView(this);
 	CRect clientRect;
 	GetClientRect(&clientRect);
 	dlg.m_centreX = clientRect.Width() / 2;
 	dlg.m_centreY = clientRect.Height() / 2;
 	dlg.m_radius = min(clientRect.Width(), clientRect.Height()) / 6;
-	if (dlg.DoModal() == IDOK) {
+	INT_PTR result = dlg.DoModal();
+	ClearShapePreview();
+	if (result == IDOK) {
 		if (m_is3DMode) {
 			ClearAll();  // 退出三维模式，回到二维绘制
 		}
@@ -483,14 +503,17 @@ void CCGLabView::OnCircleBresenham()
 
 void CCGLabView::OnEllipseBresenham()
 {
-	EllipseInputDlg dlg;
+	EllipseInputDlg dlg(this);
+	dlg.SetPreviewView(this);
 	CRect clientRect;
 	GetClientRect(&clientRect);
 	dlg.m_centreX = clientRect.Width() / 2;
 	dlg.m_centreY = clientRect.Height() / 2;
 	dlg.m_a = clientRect.Width() / 8;
 	dlg.m_b = clientRect.Height() / 8;
-	if (dlg.DoModal() == IDOK) {
+	INT_PTR result = dlg.DoModal();
+	ClearShapePreview();
+	if (result == IDOK) {
 		if (m_is3DMode) {
 			ClearAll();  // 退出三维模式，回到二维绘制
 		}
@@ -521,6 +544,8 @@ void CCGLabView::OnLButtonDown(UINT nFlags, CPoint point)
 			m_currentPolygonAlgorithm == MyGraphics::Polygon::ALGO_SEEDFILL_8) &&
 			!m_currentPolygon->HasSeed()) {
 			// 种子填充：左键选种子点，生成填充后结束绘制
+			m_fillPreview.clear();
+			m_hasFillPreview = false;
 			m_currentPolygon->SetSeed(MyGraphics::Point2D(point.x, point.y));
 			m_currentPolygon->GeneratePoints();
 			m_objects.push_back(m_currentPolygon);
@@ -556,6 +581,8 @@ void CCGLabView::OnRButtonDown(UINT nFlags, CPoint point)
 			(m_currentPolygonAlgorithm == MyGraphics::Polygon::ALGO_SEEDFILL_4 ||
 				m_currentPolygonAlgorithm == MyGraphics::Polygon::ALGO_SEEDFILL_8)) {
 			// 右键也可以直接指定种子点
+			m_fillPreview.clear();
+			m_hasFillPreview = false;
 			m_currentPolygon->SetSeed(MyGraphics::Point2D(point.x, point.y));
 			m_currentPolygon->GeneratePoints();
 			m_objects.push_back(m_currentPolygon);
@@ -572,9 +599,28 @@ void CCGLabView::OnRButtonDown(UINT nFlags, CPoint point)
 
 void CCGLabView::OnMouseMove(UINT nFlags, CPoint point)
 {
-	if (m_isDrawingPolygon && m_currentPolygon && !m_currentPolygon->IsClosed()) {
-		m_lastMousePos = point;
-		Invalidate();  // 重绘以更新预览线
+	if (m_isDrawingPolygon && m_currentPolygon) {
+		if (!m_currentPolygon->IsClosed()) {
+			m_lastMousePos = point;
+			Invalidate();  // 重绘以更新预览线
+		}
+		else if (!m_currentPolygon->HasSeed() &&
+			(m_currentPolygonAlgorithm == MyGraphics::Polygon::ALGO_SEEDFILL_4 ||
+				m_currentPolygonAlgorithm == MyGraphics::Polygon::ALGO_SEEDFILL_8)) {
+			ULONGLONG now = GetTickCount64();
+			int dx = point.x - m_lastFillPreviewPos.x;
+			int dy = point.y - m_lastFillPreviewPos.y;
+			if (dx < 0) dx = -dx;
+			if (dy < 0) dy = -dy;
+			if (dx + dy >= 6 && now - m_lastFillPreviewTick >= 120) {
+				m_lastFillPreviewPos = point;
+				m_lastFillPreviewTick = now;
+				m_fillPreview = m_currentPolygon->PreviewFill(
+					MyGraphics::Point2D(point.x, point.y));
+				m_hasFillPreview = !m_fillPreview.empty();
+				Invalidate();
+			}
+		}
 	}
 
 	CView::OnMouseMove(nFlags, point);
@@ -937,6 +983,70 @@ void CCGLabView::On3dtransformView()
 	Invalidate();
 }
 
+
+void CCGLabView::ClearShapePreview()
+{
+	m_shapePreview.clear();
+	m_hasShapePreview = false;
+	Invalidate();
+}
+
+void CCGLabView::DrawShapePreview(CDC* pDC)
+{
+	if (!m_hasShapePreview) return;
+	for (const auto& pt : m_shapePreview) {
+		pDC->SetPixel(pt.x, pt.y, RGB(160, 160, 160));
+	}
+}
+
+void CCGLabView::PreviewLine(const MyGraphics::Point2D& start, const MyGraphics::Point2D& end)
+{
+	auto inRange = [](int v) { return v >= -10000 && v <= 10000; };
+	if (!inRange(start.x) || !inRange(start.y) || !inRange(end.x) || !inRange(end.y)) {
+		ClearShapePreview();
+		return;
+	}
+	MyGraphics::Line line;
+	line.SetAlgorithm(m_previewLineAlgo);
+	line.SetPoints(start, end);
+	line.GeneratePoints();
+	m_shapePreview = line.GetPoints();
+	m_hasShapePreview = !m_shapePreview.empty();
+	Invalidate();
+}
+
+void CCGLabView::PreviewCircle(const MyGraphics::Point2D& centre, int radius)
+{
+	m_shapePreview.clear();
+	m_hasShapePreview = false;
+	auto inRange = [](int v) { return v >= -10000 && v <= 10000; };
+	if (inRange(centre.x) && inRange(centre.y) && radius > 0 && radius <= 5000) {
+		MyGraphics::Circle circle;
+		circle.SetAlgorithm(m_previewCircleAlgo);
+		circle.SetParameters(centre, radius);
+		circle.GeneratePoints();
+		m_shapePreview = circle.GetPoints();
+		m_hasShapePreview = !m_shapePreview.empty();
+	}
+	Invalidate();
+}
+
+void CCGLabView::PreviewEllipse(const MyGraphics::Point2D& centre, int a, int b)
+{
+	m_shapePreview.clear();
+	m_hasShapePreview = false;
+	auto inRange = [](int v) { return v >= -10000 && v <= 10000; };
+	if (inRange(centre.x) && inRange(centre.y) && a > 0 && b > 0 &&
+		a <= 5000 && b <= 5000) {
+		MyGraphics::Ellipse ellipse;
+		ellipse.SetAlgorithm(MyGraphics::Ellipse::ALGO_BRESENHAM);
+		ellipse.SetParameters(centre, a, b);
+		ellipse.GeneratePoints();
+		m_shapePreview = ellipse.GetPoints();
+		m_hasShapePreview = !m_shapePreview.empty();
+	}
+	Invalidate();
+}
 
 void CCGLabView::Capture2DGhost()
 {
