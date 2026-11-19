@@ -16,6 +16,7 @@
 #include "Line.hpp"
 #include "LineAlgorithms.hpp"
 #include "LineClipAlgorithms.hpp"
+#include "Transform2D.hpp"
 
 using namespace MyGraphics;
 using namespace MyGraphics::Algorithms;
@@ -49,6 +50,7 @@ void Line::SetAlgorithm(Algorithm algo) {
         break;
     case ALGO_BRESENHAM:
         m_lineAlgorithm = std::make_unique<BresenhamLineAlgorithm>();
+        break;
     case ALGO_COHEN_SUTHERLAND:
         // Cohen-Sutherland算法需要两个组件:
         m_lineAlgorithm = std::make_unique<DDALineAlgorithm>();  // 用于绘制裁剪后的线段
@@ -99,6 +101,19 @@ void Line::GeneratePoints() {
 * 在指定设备上下文中绘制直线
 * @param pDC: 设备上下文指针
 */
+void Line::Transform(const Matrix3x3& matrix) {
+    m_startPoint = TransformPoint(m_startPoint, matrix);
+    m_endPoint = TransformPoint(m_endPoint, matrix);
+    GeneratePoints();
+}
+
+void Line::GetOutline(std::vector<Point2D>& points, bool& closed) const {
+    points.clear();
+    points.push_back(m_startPoint);
+    points.push_back(m_endPoint);
+    closed = false;
+}
+
 void Line::Draw(CDC* pDC) {
     // Cohen-Sutherland算法需要额外绘制裁剪窗口和原始线段
     if (m_algorithm == ALGO_COHEN_SUTHERLAND) {

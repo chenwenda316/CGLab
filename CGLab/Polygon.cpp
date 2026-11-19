@@ -100,7 +100,10 @@ void Polygon::GeneratePoints() {
     if (m_closed && m_polygonAlgorithm) {
         if (m_algorithm == ALGO_WEILER_ATHERTON) {
             // Weiler-Atherton裁剪算法
-            m_originalVertices = m_vertices;
+            // 保留未裁剪的原始顶点，避免对已裁剪结果反复裁剪
+            if (m_originalVertices.empty()) {
+                m_originalVertices = m_vertices;
+            }
             m_vertices = m_polygonAlgorithm->ClipPolygon(m_originalVertices, m_clipWindow);
             m_isClipped = true;
         }
@@ -152,6 +155,11 @@ void Polygon::DrawSeed(CDC* pDC, const Point2D& point) {
 * 4. 填充点
 * 5. 种子点(如果有)
 */
+void Polygon::GetOutline(std::vector<Point2D>& points, bool& closed) const {
+    points = m_vertices;
+    closed = m_closed;
+}
+
 void Polygon::Draw(CDC* pDC) {
     // 1. 绘制裁剪窗口和原始多边形(如果使用裁剪算法)
     if (m_algorithm == ALGO_WEILER_ATHERTON) {
@@ -213,11 +221,25 @@ void Polygon::Draw(CDC* pDC) {
 * @param matrix: 变换矩阵
 */
 void Polygon::Transform(const Matrix3x3& matrix) {
+    // 裁剪多边形同时变换未裁剪的原始顶点，变换后重新裁剪
+    if (m_algorithm == ALGO_WEILER_ATHERTON && !m_originalVertices.empty()) {
+        for (auto& vertex : m_originalVertices) {
+            vertex = TransformPoint(vertex, matrix);
+        }
+    }
+
     TransformVertices(matrix);
+
+    // 种子点必须跟着图形一起变换，否则重新填充时会落到多边形外
+    if (m_hasSeed) {
+        m_seed = TransformPoint(m_seed, matrix);
+    }
+
     if (m_closed) {
-        GeneratePoints();  // 重新生成填充点
+        GeneratePoints();  // 重新生成填充/裁剪结果
     }
 }
+
 
 /**
 * 对多边形顶点应用变换

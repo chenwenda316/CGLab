@@ -78,7 +78,7 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 	//  the CREATESTRUCT cs
 
 	cs.style &= ~FWS_ADDTOTITLE;  // 移除自动添加的文档标题
-	cs.lpszName = _T("Ziyu ZHOU's CG Lab");  // 设置自定义标题
+	cs.lpszName = _T("CGLab - 计算机图形学算法演示");  // 设置自定义标题
 
 	return TRUE;
 }

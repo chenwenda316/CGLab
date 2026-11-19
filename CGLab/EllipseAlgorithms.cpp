@@ -46,22 +46,26 @@ std::vector<Point2D> BresenhamEllipseAlgorithm::GeneratePoints(
     int x = 0;
     int y = b;
 
+    // 判别式统一用 double 计算，避免整数中间结果溢出
+    const double aa = static_cast<double>(a);
+    const double bb = static_cast<double>(b);
+
     // 区域1 - 从y轴开始绘制到斜率为-1的点
     // 判别式初值
-    double d1 = b * b + a * a * (-b + 0.25);
+    double d1 = bb * bb + aa * aa * (-b + 0.25);
     AddPoints(points, center, x, y);
 
     // 第一区域的处理
     // 当b^2(x+1) < a^2(y-0.5)时,在第一区域
-    while (b * b * (x + 1) < a * a * (y - 0.5)) {
+    while (bb * bb * (x + 1) < aa * aa * (y - 0.5)) {
         if (d1 <= 0) {
             // 选择E点
-            d1 += b * b * (2 * x + 3);
+            d1 += bb * bb * (2 * x + 3);
             x++;
         }
         else {
             // 选择SE点
-            d1 += b * b * (2 * x + 3) + a * a * (-2 * y + 2);
+            d1 += bb * bb * (2 * x + 3) + aa * aa * (-2 * y + 2);
             x++;
             y--;
         }
@@ -70,21 +74,21 @@ std::vector<Point2D> BresenhamEllipseAlgorithm::GeneratePoints(
 
     // 区域2 - 从斜率为-1的点绘制到x轴
     // 第二区域判别式初值
-    double d2 = b * b * (x + 0.5) * (x + 0.5) +
-        a * a * (y - 1) * (y - 1) -
-        a * a * b * b;
+    double d2 = bb * bb * (x + 0.5) * (x + 0.5) +
+        aa * aa * (y - 1) * (y - 1) -
+        aa * aa * bb * bb;
 
     // 第二区域的处理：当y > 0时继续
     while (y > 0) {
         if (d2 <= 0) {
             // 选择SE点
-            d2 += b * b * (2 * x + 2) + a * a * (-2 * y + 3);
+            d2 += bb * bb * (2 * x + 2) + aa * aa * (-2 * y + 3);
             x++;
             y--;
         }
         else {
             // 选择S点
-            d2 += a * a * (-2 * y + 3);
+            d2 += aa * aa * (-2 * y + 3);
             y--;
         }
         AddPoints(points, center, x, y);

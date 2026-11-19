@@ -128,6 +128,9 @@ void CCGLabView::OnDraw(CDC* pDC)
 		}
 
 		// 绘制所有已完成的图形
+		// 变换前的灰色预览
+		Draw2DGhost(&memDC);
+
 		for (const auto& obj : m_objects) {
 			obj->Draw(&memDC);
 		}
@@ -168,6 +171,10 @@ void CCGLabView::ClearAll()
 	m_frustum = nullptr;
 	m_projectedPoints.clear();
 	m_is3DMode = false;
+	m_isOrthographic = false;
+	m_ghost2D.clear();
+	m_ghost3D.clear();
+	m_hasGhost3D = false;
 }
 
 Matrix4x4 CCGLabView::GetObliqueProjMatrix(double alpha, double beta)
@@ -197,6 +204,12 @@ std::vector<MyGraphics::Point2D> CCGLabView::ProjectPoints(
 	return points2d;
 }
 
+void CCGLabView::Capture3DGhost()
+{
+	m_ghost3D = m_projectedPoints;
+	m_hasGhost3D = (m_frustum && !m_ghost3D.empty());
+}
+
 void CCGLabView::Draw3DObject(CDC* pDC)
 {
 	if (!m_frustum || m_projectedPoints.empty()) return;
@@ -211,6 +224,24 @@ void CCGLabView::Draw3DObject(CDC* pDC)
 
 	int offsetX = rect.Width() / 2;
 	int offsetY = rect.Height() / 2;
+
+	// 变换前的灰色预览
+	if (m_hasGhost3D && m_ghost3D.size() == m_projectedPoints.size()) {
+		CPen ghostPen(PS_DASH, 1, RGB(160, 160, 160));
+		CPen* pOldPen = pDC->SelectObject(&ghostPen);
+		for (const auto& edge : m_frustum->GetEdges()) {
+			const auto& p1 = m_ghost3D[edge.first];
+			const auto& p2 = m_ghost3D[edge.second];
+			int x1 = offsetX + static_cast<int>(p1.x * scale);
+			int y1 = offsetY - static_cast<int>(p1.y * scale);
+			int x2 = offsetX + static_cast<int>(p2.x * scale);
+			int y2 = offsetY - static_cast<int>(p2.y * scale);
+			pDC->MoveTo(x1, y1);
+			pDC->LineTo(x2, y2);
+		}
+		pDC->SelectObject(pOldPen);
+	}
+
 
 	// 绘制边
 	const auto& edges = m_frustum->GetEdges();
@@ -240,8 +271,9 @@ void CCGLabView::DrawPrompt(CDC* pDC) {
 	if (!m_currentPolygon->IsClosed()) {
 		prompt = _T("左键点击添加顶点，右键完成绘制");
 	}
-	else if (m_currentPolygonAlgorithm != MyGraphics::Polygon::ALGO_SCANLINE
-		&& !m_currentPolygon->HasSeed()) {
+	else if ((m_currentPolygonAlgorithm == MyGraphics::Polygon::ALGO_SEEDFILL_4 ||
+		m_currentPolygonAlgorithm == MyGraphics::Polygon::ALGO_SEEDFILL_8) &&
+		!m_currentPolygon->HasSeed()) {
 		prompt = _T("请点击多边形内部选择种子点");
 	}
 
@@ -249,13 +281,10 @@ void CCGLabView::DrawPrompt(CDC* pDC) {
 		// 设置文本样式
 		pDC->SetBkMode(TRANSPARENT);
 		pDC->SetTextColor(RGB(0, 0, 0));
-
-		// 在屏幕上方显示提示
-		CRect rect;
-		GetClientRect(&rect);
 		pDC->TextOut(10, 10, prompt);
 	}
 }
+
 
 void CCGLabView::Draw3ViewsObject(CDC* pDC) {
     if (!m_frustum) return;
@@ -377,7 +406,17 @@ CCGLabDoc* CCGLabView::GetDocument() const // non-debug version is inline
 void CCGLabView::HandleLineAlgorithm(MyGraphics::Line::Algorithm algo)
 {
 	LineInputDlg dlg;
+	CRect clientRect;
+	GetClientRect(&clientRect);
+	dlg.m_x0 = clientRect.Width() / 4;
+	dlg.m_y0 = clientRect.Height() / 2;
+	dlg.m_x1 = clientRect.Width() * 3 / 4;
+	dlg.m_y1 = clientRect.Height() / 2;
 	if (dlg.DoModal() == IDOK) {
+		if (m_is3DMode) {
+			ClearAll();  // 退出三维模式，回到二维绘制
+		}
+		m_ghost2D.clear();
 		auto line = std::make_shared<MyGraphics::Line>();
 		line->SetAlgorithm(algo);
 		line->SetPoints(
@@ -393,7 +432,16 @@ void CCGLabView::HandleLineAlgorithm(MyGraphics::Line::Algorithm algo)
 void CCGLabView::HandleCircleAlgorithm(MyGraphics::Circle::Algorithm algo)
 {
 	CircleInputDlg dlg;
+	CRect clientRect;
+	GetClientRect(&clientRect);
+	dlg.m_centreX = clientRect.Width() / 2;
+	dlg.m_centreY = clientRect.Height() / 2;
+	dlg.m_radius = min(clientRect.Width(), clientRect.Height()) / 6;
 	if (dlg.DoModal() == IDOK) {
+		if (m_is3DMode) {
+			ClearAll();  // 退出三维模式，回到二维绘制
+		}
+		m_ghost2D.clear();
 		auto circle = std::make_shared<MyGraphics::Circle>();
 		circle->SetAlgorithm(algo);
 		circle->SetParameters(
@@ -436,7 +484,17 @@ void CCGLabView::OnCircleBresenham()
 void CCGLabView::OnEllipseBresenham()
 {
 	EllipseInputDlg dlg;
+	CRect clientRect;
+	GetClientRect(&clientRect);
+	dlg.m_centreX = clientRect.Width() / 2;
+	dlg.m_centreY = clientRect.Height() / 2;
+	dlg.m_a = clientRect.Width() / 8;
+	dlg.m_b = clientRect.Height() / 8;
 	if (dlg.DoModal() == IDOK) {
+		if (m_is3DMode) {
+			ClearAll();  // 退出三维模式，回到二维绘制
+		}
+		m_ghost2D.clear();
 		auto ellipse = std::make_shared<MyGraphics::Ellipse>();
 		// auto ellipse = new MyGraphics::Ellipse();
 		ellipse->SetAlgorithm(MyGraphics::Ellipse::ALGO_BRESENHAM);
@@ -456,17 +514,24 @@ void CCGLabView::OnLButtonDown(UINT nFlags, CPoint point)
 	if (m_isDrawingPolygon && m_currentPolygon) {
 		if (!m_currentPolygon->IsClosed()) {
 			m_currentPolygon->AddVertex(MyGraphics::Point2D(point.x, point.y));
-			m_lastMousePos = point;  // 更新最后的鼠标位置
+			m_lastMousePos = point;  // 记录当前鼠标位置
 			Invalidate();
 		}
-		else if (m_currentPolygonAlgorithm != MyGraphics::Polygon::ALGO_SCANLINE) {
-			// 如果是种子填充算法且多边形已闭合，则设置种子点
+		else if ((m_currentPolygonAlgorithm == MyGraphics::Polygon::ALGO_SEEDFILL_4 ||
+			m_currentPolygonAlgorithm == MyGraphics::Polygon::ALGO_SEEDFILL_8) &&
+			!m_currentPolygon->HasSeed()) {
+			// 种子填充：左键选种子点，生成填充后结束绘制
 			m_currentPolygon->SetSeed(MyGraphics::Point2D(point.x, point.y));
 			m_currentPolygon->GeneratePoints();
+			m_objects.push_back(m_currentPolygon);
+			m_isDrawingPolygon = false;
+			m_currentPolygon = nullptr;
 			Invalidate();
 		}
-	}	CView::OnLButtonDown(nFlags, point);
+	}
+	CView::OnLButtonDown(nFlags, point);
 }
+
 
 
 void CCGLabView::OnRButtonDown(UINT nFlags, CPoint point)
@@ -475,13 +540,14 @@ void CCGLabView::OnRButtonDown(UINT nFlags, CPoint point)
 		if (!m_currentPolygon->IsClosed()) {
 			m_currentPolygon->Close();
 
-			if (m_currentPolygonAlgorithm == MyGraphics::Polygon::ALGO_SCANLINE) {
+			if (m_currentPolygon->IsClosed() &&
+				(m_currentPolygonAlgorithm == MyGraphics::Polygon::ALGO_SCANLINE ||
+					m_currentPolygonAlgorithm == MyGraphics::Polygon::ALGO_WEILER_ATHERTON)) {
+				// 扫描线和多边形裁剪在闭合后立即生成并保存
 				m_currentPolygon->GeneratePoints();
 				m_objects.push_back(m_currentPolygon);
 				m_isDrawingPolygon = false;
-			}
-			else if (m_currentPolygonAlgorithm == MyGraphics::Polygon::ALGO_WEILER_ATHERTON) {
-				m_currentPolygon->GeneratePoints();
+				m_currentPolygon = nullptr;
 			}
 
 			Invalidate();
@@ -489,17 +555,19 @@ void CCGLabView::OnRButtonDown(UINT nFlags, CPoint point)
 		else if (!m_currentPolygon->HasSeed() &&
 			(m_currentPolygonAlgorithm == MyGraphics::Polygon::ALGO_SEEDFILL_4 ||
 				m_currentPolygonAlgorithm == MyGraphics::Polygon::ALGO_SEEDFILL_8)) {
-			// Set seed point and generate fill points
+			// 右键也可以直接指定种子点
 			m_currentPolygon->SetSeed(MyGraphics::Point2D(point.x, point.y));
 			m_currentPolygon->GeneratePoints();
 			m_objects.push_back(m_currentPolygon);
 			m_isDrawingPolygon = false;
+			m_currentPolygon = nullptr;
 			Invalidate();
 		}
 	}
 
 	CView::OnRButtonDown(nFlags, point);
 }
+
 
 
 void CCGLabView::OnMouseMove(UINT nFlags, CPoint point)
@@ -543,106 +611,130 @@ void CCGLabView::OnSeedfilling8()
 
 void CCGLabView::On2dtransformReflect()
 {
-	if (m_objects.empty()) return;
+	if (m_objects.empty()) {
+		MessageBox(_T("请先绘制图形，再进行二维变换。"), _T("提示"), MB_OK | MB_ICONINFORMATION);
+		return;
+	}
+
+	CRect rect;
+	GetClientRect(&rect);
 
 	ReflectDlg dlg;
+	dlg.m_b = rect.Height() / 2;  // 直线对称的默认直线：水平中线
 	if (dlg.DoModal() == IDOK) {
-		auto polygon = std::dynamic_pointer_cast<MyGraphics::Polygon>(m_objects.back());
-		if (polygon) {
-			MyGraphics::Matrix3x3 matrix;
-			switch (dlg.m_type) {
-			case 0: // x轴对称
-				matrix = MyGraphics::Transform::ReflectX();
-				break;
-			case 1: // y轴对称
-				matrix = MyGraphics::Transform::ReflectY();
-				break;
-			case 2: // 直线对称
-				matrix = MyGraphics::Transform::Reflect(dlg.m_k, dlg.m_b);
-				break;
-			}
-			polygon->Transform(matrix);
-			Invalidate();
+		MyGraphics::Matrix3x3 matrix;
+		switch (dlg.m_type) {
+		case 0:  // 关于水平中线对称
+			matrix = MyGraphics::Transform::Translate(0, rect.Height() / 2)
+				* MyGraphics::Transform::ReflectX()
+				* MyGraphics::Transform::Translate(0, -rect.Height() / 2);
+			break;
+		case 1:  // 关于竖直中线对称
+			matrix = MyGraphics::Transform::Translate(rect.Width() / 2, 0)
+				* MyGraphics::Transform::ReflectY()
+				* MyGraphics::Transform::Translate(-rect.Width() / 2, 0);
+			break;
+		case 2:  // 关于直线 y = kx + b 对称
+			matrix = MyGraphics::Transform::Reflect(dlg.m_k, dlg.m_b);
+			break;
 		}
+		Apply2DTransform(matrix);
 	}
 }
+
 
 
 void CCGLabView::On2dtransformTranslate()
 {
-	// 先绘制图形，再进行变换
-	if (m_objects.empty()) return;
+	if (m_objects.empty()) {
+		MessageBox(_T("请先绘制图形，再进行二维变换。"), _T("提示"), MB_OK | MB_ICONINFORMATION);
+		return;
+	}
 
 	TranslateDlg dlg;
+	dlg.m_dx = 50;
+	dlg.m_dy = 50;
 	if (dlg.DoModal() == IDOK) {
-		auto polygon = std::dynamic_pointer_cast<MyGraphics::Polygon>(m_objects.back());
-		if (polygon) {
-			auto matrix = MyGraphics::Transform::Translate(dlg.m_dx, dlg.m_dy);
-			polygon->Transform(matrix);
-			Invalidate();
-		}
+		Apply2DTransform(MyGraphics::Transform::Translate(dlg.m_dx, dlg.m_dy));
 	}
 }
+
 
 
 void CCGLabView::On2dtransformRotate()
 {
-	if (m_objects.empty()) return;
+	if (m_objects.empty()) {
+		MessageBox(_T("请先绘制图形，再进行二维变换。"), _T("提示"), MB_OK | MB_ICONINFORMATION);
+		return;
+	}
+
+	CRect rect;
+	GetClientRect(&rect);
 
 	RotateDlg dlg;
+	dlg.m_angle = 45.0;
+	dlg.m_cx = rect.Width() / 2;
+	dlg.m_cy = rect.Height() / 2;
 	if (dlg.DoModal() == IDOK) {
-		auto polygon = std::dynamic_pointer_cast<MyGraphics::Polygon>(m_objects.back());
-		if (polygon) {
-			auto matrix = MyGraphics::Transform::Rotate(
-				dlg.m_angle,
-				MyGraphics::Point2D(dlg.m_cx, dlg.m_cy)
-			);
-			polygon->Transform(matrix);
-			Invalidate();
-		}
+		Apply2DTransform(MyGraphics::Transform::Rotate(dlg.m_angle,
+			MyGraphics::Point2D(dlg.m_cx, dlg.m_cy)));
 	}
 }
+
 
 
 void CCGLabView::On2dtransformShear()
 {
-	if (m_objects.empty()) return;
+	if (m_objects.empty()) {
+		MessageBox(_T("请先绘制图形，再进行二维变换。"), _T("提示"), MB_OK | MB_ICONINFORMATION);
+		return;
+	}
 
 	ShearDlg dlg;
+	dlg.m_shx = 0.5;
+	dlg.m_shy = 0.0;
 	if (dlg.DoModal() == IDOK) {
-		auto polygon = std::dynamic_pointer_cast<MyGraphics::Polygon>(m_objects.back());
-		if (polygon) {
-			auto matrix = MyGraphics::Transform::Shear(dlg.m_shx, dlg.m_shy);
-			polygon->Transform(matrix);
-			Invalidate();
-		}
+		Apply2DTransform(MyGraphics::Transform::Shear(dlg.m_shx, dlg.m_shy));
 	}
 }
+
 
 
 void CCGLabView::On2dtransformScale()
 {
-	if (m_objects.empty()) return;
+	if (m_objects.empty()) {
+		MessageBox(_T("请先绘制图形，再进行二维变换。"), _T("提示"), MB_OK | MB_ICONINFORMATION);
+		return;
+	}
+
+	CRect rect;
+	GetClientRect(&rect);
 
 	ScaleDlg dlg;
+	dlg.m_sx = 1.5;
+	dlg.m_sy = 1.5;
+	dlg.m_cx = rect.Width() / 2;
+	dlg.m_cy = rect.Height() / 2;
 	if (dlg.DoModal() == IDOK) {
-		auto polygon = std::dynamic_pointer_cast<MyGraphics::Polygon>(m_objects.back());
-		if (polygon) {
-			auto matrix = MyGraphics::Transform::Scale(
-				dlg.m_sx, dlg.m_sy,
-				MyGraphics::Point2D(dlg.m_cx, dlg.m_cy)
-			);
-			polygon->Transform(matrix);
-			Invalidate();
-		}
+		Apply2DTransform(MyGraphics::Transform::Scale(dlg.m_sx, dlg.m_sy,
+			MyGraphics::Point2D(dlg.m_cx, dlg.m_cy)));
 	}
 }
+
 
 
 void CCGLabView::OnClippingCohensutherland()
 {
 	// 首先设置裁剪窗口
+	CRect clientRect;
+	GetClientRect(&clientRect);
+
 	ClipWindowDlg clipDlg;
+	// 默认取画面中部的一块窗口，避免用户面对一个不可见的小框
+	clipDlg.m_xmin = clientRect.Width() / 4;
+	clipDlg.m_ymin = clientRect.Height() / 4;
+	clipDlg.m_xmax = clientRect.Width() * 3 / 4;
+	clipDlg.m_ymax = clientRect.Height() * 3 / 4;
 	if (clipDlg.DoModal() == IDOK) {
 		m_clipWindow.SetBounds(
 			clipDlg.m_xmin,
@@ -654,6 +746,14 @@ void CCGLabView::OnClippingCohensutherland()
 
 		// 然后设置直线
 		LineInputDlg lineDlg;
+		// 默认给一条横穿裁剪窗口的直线，点确定就能看到裁剪效果
+		int winCx = (clipDlg.m_xmin + clipDlg.m_xmax) / 2;
+		int winCy = (clipDlg.m_ymin + clipDlg.m_ymax) / 2;
+		int halfW = (clipDlg.m_xmax - clipDlg.m_xmin) / 2;
+		lineDlg.m_x0 = winCx - halfW * 2;
+		lineDlg.m_y0 = winCy;
+		lineDlg.m_x1 = winCx + halfW * 2;
+		lineDlg.m_y1 = winCy;
 		if (lineDlg.DoModal() == IDOK) {
 			auto line = std::make_shared<MyGraphics::Line>();
 			line->SetAlgorithm(MyGraphics::Line::ALGO_COHEN_SUTHERLAND);
@@ -673,7 +773,14 @@ void CCGLabView::OnClippingCohensutherland()
 void CCGLabView::OnClippingWeileratherton()
 {
 	// 首先设置裁剪窗口
+	CRect clientRect;
+	GetClientRect(&clientRect);
+
 	ClipWindowDlg clipDlg;
+	clipDlg.m_xmin = clientRect.Width() / 4;
+	clipDlg.m_ymin = clientRect.Height() / 4;
+	clipDlg.m_xmax = clientRect.Width() * 3 / 4;
+	clipDlg.m_ymax = clientRect.Height() * 3 / 4;
 	if (clipDlg.DoModal() == IDOK) {
 		ClearScreen();  // 清除当前屏幕
 
@@ -713,82 +820,161 @@ void CCGLabView::On3dtransformOriginal()
 void CCGLabView::On3dtransformTranslate()
 {
 	if (!m_frustum || !m_is3DMode) {
-        MessageBox(_T("请先点击Original按钮显示原始图形"), _T("提示"), MB_OK | MB_ICONINFORMATION);
-        return;
-    }
-    
-    Matrix4x4 trans = Transform3D::Translate(30, -20, 0);
-    m_frustum->Transform(trans);
-    m_projectedPoints = ProjectPoints(m_frustum->GetVertices(), GetObliqueProjMatrix());
-    Invalidate();
+		MessageBox(_T("请先选择三维变换 → 原始图形（斜投影）显示原始图形"), _T("提示"), MB_OK | MB_ICONINFORMATION);
+		return;
+	}
+
+	TranslateDlg dlg;
+	dlg.m_dx = 30;
+	dlg.m_dy = -20;
+	if (dlg.DoModal() != IDOK) return;
+
+	Matrix4x4 trans = MyGraphics::Transform3D::Translate(dlg.m_dx, dlg.m_dy, 0);
+	Capture3DGhost();
+	m_frustum->Transform(trans);
+	m_projectedPoints = ProjectPoints(m_frustum->GetVertices(), GetObliqueProjMatrix());
+	Invalidate();
 }
+
 
 
 void CCGLabView::On3dtransformRotate()
 {
 	if (!m_frustum || !m_is3DMode) {
-        MessageBox(_T("请先点击Original按钮显示原始图形"), _T("提示"), MB_OK | MB_ICONINFORMATION);
-        return;
-    }
-    
-    Matrix4x4 rot = Transform3D::RotateY(45.0);
-    m_frustum->Transform(rot);
-    m_projectedPoints = ProjectPoints(m_frustum->GetVertices(), GetObliqueProjMatrix());
-    Invalidate();
+		MessageBox(_T("请先选择三维变换 → 原始图形（斜投影）显示原始图形"), _T("提示"), MB_OK | MB_ICONINFORMATION);
+		return;
+	}
+
+	RotateDlg dlg;
+	dlg.m_angle = 45.0;
+	dlg.m_cx = 0;
+	dlg.m_cy = 0;
+	if (dlg.DoModal() != IDOK) return;
+
+	Matrix4x4 rot = MyGraphics::Transform3D::RotateY(dlg.m_angle,
+		MyGraphics::Point3D(dlg.m_cx, dlg.m_cy, 0));
+	Capture3DGhost();
+	m_frustum->Transform(rot);
+	m_projectedPoints = ProjectPoints(m_frustum->GetVertices(), GetObliqueProjMatrix());
+	Invalidate();
 }
+
 
 
 void CCGLabView::On3dtransformShear()
 {
 	if (!m_frustum || !m_is3DMode) {
-		MessageBox(_T("请先点击Original按钮显示原始图形"), _T("提示"), MB_OK | MB_ICONINFORMATION);
+		MessageBox(_T("请先选择三维变换 → 原始图形（斜投影）显示原始图形"), _T("提示"), MB_OK | MB_ICONINFORMATION);
 		return;
 	}
 
+	ShearDlg dlg;
+	dlg.m_shx = 0.3;
+	dlg.m_shy = 0.0;
+	if (dlg.DoModal() != IDOK) return;
+
 	Matrix4x4 shear;
-	shear.Set(0, 1, 0.3);
+	shear.Set(0, 1, dlg.m_shx);
+	shear.Set(1, 0, dlg.m_shy);
+	Capture3DGhost();
 	m_frustum->Transform(shear);
 	m_projectedPoints = ProjectPoints(m_frustum->GetVertices(), GetObliqueProjMatrix());
 	Invalidate();
 }
 
 
+
 void CCGLabView::On3dtransformScale()
 {
 	if (!m_frustum || !m_is3DMode) {
-        MessageBox(_T("请先点击Original按钮显示原始图形"), _T("提示"), MB_OK | MB_ICONINFORMATION);
-        return;
-    }
-    
-    Matrix4x4 scale = Transform3D::Scale(1.5, 1.5, 1.5);
-    m_frustum->Transform(scale);
-    m_projectedPoints = ProjectPoints(m_frustum->GetVertices(), GetObliqueProjMatrix());
-    Invalidate();
+		MessageBox(_T("请先选择三维变换 → 原始图形（斜投影）显示原始图形"), _T("提示"), MB_OK | MB_ICONINFORMATION);
+		return;
+	}
+
+	ScaleDlg dlg;
+	dlg.m_sx = 1.5;
+	dlg.m_sy = 1.5;
+	dlg.m_cx = 0;
+	dlg.m_cy = 0;
+	if (dlg.DoModal() != IDOK) return;
+
+	double sz = (dlg.m_sx + dlg.m_sy) / 2.0;
+	Matrix4x4 scale = MyGraphics::Transform3D::Scale(dlg.m_sx, dlg.m_sy, sz,
+		MyGraphics::Point3D(dlg.m_cx, dlg.m_cy, 0));
+	Capture3DGhost();
+	m_frustum->Transform(scale);
+	m_projectedPoints = ProjectPoints(m_frustum->GetVertices(), GetObliqueProjMatrix());
+	Invalidate();
 }
+
 
 
 void CCGLabView::On3dtransformReflect()
 {
 	if (!m_frustum || !m_is3DMode) {
-		MessageBox(_T("请先点击Original按钮显示原始图形"), _T("提示"), MB_OK | MB_ICONINFORMATION);
+		MessageBox(_T("请先选择三维变换 → 原始图形（斜投影）显示原始图形"), _T("提示"), MB_OK | MB_ICONINFORMATION);
 		return;
 	}
 
+	// 关于 XOZ 平面（上下）对称；原来关于 z=0 对称对默认棱台是恒等变换
 	Matrix4x4 reflect;
-	reflect.Set(2, 2, -1);
+	reflect.Set(1, 1, -1);
+	Capture3DGhost();
 	m_frustum->Transform(reflect);
 	m_projectedPoints = ProjectPoints(m_frustum->GetVertices(), GetObliqueProjMatrix());
 	Invalidate();
 }
 
 
+
 void CCGLabView::On3dtransformView()
 {
 	if (!m_frustum || !m_is3DMode) {
-		MessageBox(_T("请先点击Original按钮显示原始图形"), _T("提示"), MB_OK | MB_ICONINFORMATION);
+		MessageBox(_T("请先选择三维变换 → 原始图形（斜投影）显示原始图形"), _T("提示"), MB_OK | MB_ICONINFORMATION);
 		return;
 	}
-	m_isOrthographic = true;
+	m_isOrthographic = !m_isOrthographic;  // 斜投影与三视图互相切换
+	Invalidate();
+}
+
+
+void CCGLabView::Capture2DGhost()
+{
+	m_ghost2D.clear();
+	for (const auto& obj : m_objects) {
+		GhostOutline ghost;
+		obj->GetOutline(ghost.points, ghost.closed);
+		if (ghost.points.size() >= 2) {
+			m_ghost2D.push_back(ghost);
+		}
+	}
+}
+
+void CCGLabView::Draw2DGhost(CDC* pDC)
+{
+	if (m_ghost2D.empty()) return;
+
+	CPen ghostPen(PS_DASH, 1, RGB(160, 160, 160));
+	CPen* pOldPen = pDC->SelectObject(&ghostPen);
+	for (const auto& ghost : m_ghost2D) {
+		if (ghost.points.size() < 2) continue;
+		pDC->MoveTo(ghost.points[0].x, ghost.points[0].y);
+		for (size_t i = 1; i < ghost.points.size(); ++i) {
+			pDC->LineTo(ghost.points[i].x, ghost.points[i].y);
+		}
+		if (ghost.closed) {
+			pDC->LineTo(ghost.points[0].x, ghost.points[0].y);
+		}
+	}
+	pDC->SelectObject(pOldPen);
+}
+
+void CCGLabView::Apply2DTransform(const MyGraphics::Matrix3x3& matrix)
+{
+	Capture2DGhost();
+	for (const auto& obj : m_objects) {
+		obj->Transform(matrix);
+	}
 	Invalidate();
 }
 

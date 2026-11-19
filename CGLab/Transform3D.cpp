@@ -38,9 +38,8 @@ Point3D MyGraphics::TransformPoint(const Point3D& p, const Matrix4x4& matrix) {
     }
 
     // 对结果进行四舍五入并返回
-    return Point3D(static_cast<double>(round(x)),
-        static_cast<double>(round(y)),
-        static_cast<double>(round(z)));
+    // 保留浮点坐标，避免连续变换时反复取整造成累积误差
+    return Point3D(x, y, z);
 }
 
 /**

@@ -61,6 +61,13 @@ namespace MyGraphics {
          */
         void Draw(CDC* pDC) override;
 
+        /**
+         * 对圆应用二维变换（直接变换已生成的点）
+         */
+        void Transform(const Matrix3x3& matrix) override;
+
+        void GetOutline(std::vector<Point2D>& points, bool& closed) const override;
+
     private:
         Algorithm m_algorithm;      // 当前使用的算法类型
         Point2D m_centre;          // 圆心坐标

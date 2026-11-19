@@ -13,6 +13,7 @@
 #include "pch.h"
 #include "Circle.hpp"
 #include "CircleAlgorithms.hpp"
+#include "Transform2D.hpp"
 
 using namespace MyGraphics;
 using namespace MyGraphics::Algorithms;
@@ -74,6 +75,17 @@ void Circle::GeneratePoints() {
 * @param pDC: 设备上下文指针
 * 通过遍历所有生成的点,依次用SetPixel绘制
 */
+void Circle::Transform(const Matrix3x3& matrix) {
+    for (auto& point : m_points) {
+        point = TransformPoint(point, matrix);
+    }
+}
+
+void Circle::GetOutline(std::vector<Point2D>& points, bool& closed) const {
+    points = m_points;
+    closed = true;
+}
+
 void Circle::Draw(CDC* pDC) {
     for (const auto& point : m_points) {
         pDC->SetPixel(point.x, point.y, m_color);

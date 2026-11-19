@@ -71,6 +71,13 @@ namespace MyGraphics {
          */
         void Draw(CDC* pDC) override;
 
+        /**
+         * 对直线应用二维变换
+         */
+        void Transform(const Matrix3x3& matrix) override;
+
+        void GetOutline(std::vector<Point2D>& points, bool& closed) const override;
+
     private:
         Algorithm m_algorithm;      // 当前使用的算法类型
         Point2D m_startPoint;      // 原始起点

@@ -66,6 +66,18 @@ protected:
     std::vector<MyGraphics::Point2D> m_projectedPoints;  // 投影点
     bool m_is3DMode;  // 是否在3D模式
 	bool m_isOrthographic;  // true为三视图，false为斜二侧投影
+
+	// 变换前的灰色预览
+	struct GhostOutline {
+		std::vector<MyGraphics::Point2D> points;
+		bool closed = false;
+	};
+	std::vector<GhostOutline> m_ghost2D;
+	std::vector<MyGraphics::Point2D> m_ghost3D;
+	bool m_hasGhost3D = false;
+	void Capture2DGhost();
+	void Draw2DGhost(CDC* pDC);
+	void Capture3DGhost();
     
     // 3D辅助函数
     MyGraphics::Matrix4x4 GetObliqueProjMatrix(double alpha = 45.0, double beta = 45.0);
@@ -76,6 +88,7 @@ protected:
 	void Draw3ViewsObject(CDC* pDC);
     void DrawSingleView(CDC* pDC, const std::vector<MyGraphics::Point2D>& points, CRect rect, const CString& title);
     void ClearAll();  // 清除所有对象
+    void Apply2DTransform(const MyGraphics::Matrix3x3& matrix);  // 对所有图形应用二维变换
 
 
 // Generated message map functions

@@ -31,6 +31,12 @@ std::vector<Point2D> DDALineAlgorithm::GeneratePoints(const Point2D& start, cons
     // 确定步进次数(取x、y方向位移的较大值)
     int steps = std::abs(dx) > std::abs(dy) ? std::abs(dx) : std::abs(dy);
 
+    // 起点与终点重合时直接返回一个点，避免除以 0
+    if (steps == 0) {
+        points.push_back(start);
+        return points;
+    }
+
     // 计算x和y方向的增量
     float xIncrement = static_cast<float>(dx) / steps;
     float yIncrement = static_cast<float>(dy) / steps;
@@ -86,6 +92,12 @@ std::vector<Point2D> MidpointLineAlgorithm::GeneratePoints(const Point2D& start,
         std::swap(x1, y1);
         std::swap(x2, y2);
         std::swap(dx, dy);
+
+        // 交换坐标轴后要保证 x1 <= x2，否则循环一次都不会执行
+        if (x1 > x2) {
+            std::swap(x1, x2);
+            std::swap(y1, y2);
+        }
         step_y = (y2 >= y1) ? 1 : -1;
     }
 
@@ -133,7 +145,7 @@ std::vector<Point2D> BresenhamLineAlgorithm::GeneratePoints(const Point2D& start
 
     // 以x为主方向的情况
     if (abs(dx) > abs(dy)) {
-        int e = -dx;  // 初始误差
+        int e = -std::abs(dx);  // 必须取绝对值，反向画线才正确  // 初始误差
         int x = x0;
         int y = y0;
 
@@ -151,7 +163,7 @@ std::vector<Point2D> BresenhamLineAlgorithm::GeneratePoints(const Point2D& start
     }
     // 以y为主方向的情况
     else {
-        int e = -dy;  // 初始误差
+        int e = -std::abs(dy);  // 必须取绝对值，反向画线才正确  // 初始误差
         int x = x0;
         int y = y0;
 

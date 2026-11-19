@@ -17,6 +17,7 @@
 #include <vector>
 
 namespace MyGraphics {
+    class Matrix3x3;  // 前置声明，供二维变换接口使用
     /**
      * GraphicsObject类 - 二维图形对象的抽象基类
      * 定义了所有二维图形对象的共同接口和属性
@@ -65,6 +66,21 @@ namespace MyGraphics {
          * 派生类必须实现此函数以生成构成图形的所有点
          */
         virtual void GeneratePoints() = 0;
+
+        /**
+         * 对图形应用二维变换矩阵
+         * 默认实现为空，具体图形按自身类型覆盖
+         */
+        virtual void Transform(const Matrix3x3& /*matrix*/) {}
+
+        /**
+         * 获取图形轮廓，用于变换时绘制灰色预览
+         * @param points: 输出的轮廓点
+         * @param closed: 输出轮廓是否闭合
+         */
+        virtual void GetOutline(std::vector<Point2D>& /*points*/, bool& closed) const {
+            closed = false;
+        }
 
     protected:
         ObjectType m_type;   // 图形类型

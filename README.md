@@ -44,7 +44,7 @@
 
 ### 6. 裁剪算法
 - Cohen-Sutherland直线裁剪
-- Weiler-Atherton多边形裁剪
+- Sutherland-Hodgman多边形裁剪
 
 ### 7. 三维图形
 - 斜二侧图形预览
